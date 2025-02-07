@@ -9,16 +9,14 @@ from io import BytesIO
 from dotenv import load_dotenv
 import logging
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
-
-# Load Environment Variables (AWS Access Key and Secret Key)
-load_dotenv()
+# Load Environment Variables
+dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(dotenv_path)
 
 # Ensure AWS credentials are available
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
-BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "qr-code-project-bucket")  # Corrected bucket name access
+BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "qr-code-project-bucket-aws")
 
 if not AWS_ACCESS_KEY or not AWS_SECRET_KEY:
     raise RuntimeError("AWS credentials are missing. Check your .env file.")
@@ -29,7 +27,7 @@ app = FastAPI()
 # Allowing CORS for frontend applications
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow any frontend origin
+    allow_origins=["*"],  # Allow any frontend origin (change as needed)
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -48,7 +46,7 @@ class QRRequest(BaseModel):
 @app.post("/generate-qr/")
 async def generate_qr(url: str = Query(None), request: QRRequest = None):
     """
-    Generate a QR Code, upload it to S3, and return the public URL.
+    Generates a QR Code, uploads it to S3, and returns the public URL.
     Supports both Query Parameters and JSON Body.
     """
     url = url or (request.url if request else None)
@@ -82,7 +80,7 @@ async def generate_qr(url: str = Query(None), request: QRRequest = None):
 
         logging.debug(f"Uploading QR Code to S3 with file name: {file_name}")
 
-        # Upload to S3 (removed ACL='public-read')
+        # Upload to S3 (Removed ACL='public-read' since S3 bucket blocks ACLs)
         s3.put_object(
             Bucket=BUCKET_NAME,
             Key=file_name,
