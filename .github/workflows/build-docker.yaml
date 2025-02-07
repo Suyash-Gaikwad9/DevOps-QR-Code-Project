@@ -1,7 +1,11 @@
 name: Build and Publish image to DockerHub
 on: 
-  [workflow_dispatch]
-
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/Dockerfile'
+      - 'front-end-nextjs/Dockerfile'
 jobs:
   publish_image:
     runs-on: ubuntu-latest
